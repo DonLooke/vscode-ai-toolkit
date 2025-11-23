@@ -1,0 +1,56 @@
+From c5620e97fff4cb6efad7fda27d4c6efabd8a2f16 Mon Sep 17 00:00:00 2001
+From: DonLooke <loke@lokelindsjo.se>
+Date: Sun, 23 Nov 2025 02:29:25 +0100
+Subject: [PATCH] ci: support optional GHCR base image via build-arg and login
+
+---
+ .github/workflows/build-and-upload-image.yml | 16 ++++++++++++++--
+ RunescapeGPT_v1.0.0/Dockerfile               |  5 +++--
+ 2 files changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/.github/workflows/build-and-upload-image.yml b/.github/workflows/build-and-upload-image.yml
+index d623b8d..e295666 100644
+--- a/.github/workflows/build-and-upload-image.yml
++++ b/.github/workflows/build-and-upload-image.yml
+@@ -21,11 +21,23 @@ jobs:
+       - name: Set up Docker Buildx
+         uses: docker/setup-buildx-action@v3
+ 
+-      - name: Build image with buildx
++      - name: Login to GHCR (if secret provided)
++        if: secrets.GHCR_PAT != ''
++        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
++
++      - name: Build image with buildx (supports optional GHCR base image)
++        env:
++          GHCR_IMAGE: ${{ secrets.GHCR_IMAGE }}
+         run: |
+           cd RunescapeGPT_v1.0.0 || exit 1
+           IMAGE_NAME=runescape-gpt-app:latest
+-          docker build -t $IMAGE_NAME .
++          if [ -n "$GHCR_IMAGE" ]; then
++            echo "Building using GHCR base image: $GHCR_IMAGE"
++            docker build --build-arg BASE_IMAGE="$GHCR_IMAGE" -t $IMAGE_NAME .
++          else
++            echo "Building using Dockerfile default base image"
++            docker build -t $IMAGE_NAME .
++          fi
+ 
+       - name: Save image to tar
+         run: |
+diff --git a/RunescapeGPT_v1.0.0/Dockerfile b/RunescapeGPT_v1.0.0/Dockerfile
+index 4854543..758b73a 100644
+--- a/RunescapeGPT_v1.0.0/Dockerfile
++++ b/RunescapeGPT_v1.0.0/Dockerfile
+@@ -1,5 +1,6 @@
+-# Use an official Python runtime as a parent image
+-FROM python:3.9
++# Allow overriding the base image (useful to pull a GHCR model base image)
++ARG BASE_IMAGE=python:3.9
++FROM ${BASE_IMAGE}
+ 
+ # Set the working directory in the container
+ WORKDIR /usr/src/app
+-- 
+2.45.1.windows.1
+
