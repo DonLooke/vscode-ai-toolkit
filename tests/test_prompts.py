@@ -22,7 +22,7 @@ def test_has_template_sections():
         "Prompt Template",
         "Variables and Interpolation",
         "Safety and Rate-limiting",
-        "PR Checklist for Prompt Changes",
+        "PR checklist for prompt changes",
     ]
     for heading in required:
         assert heading in text, f"Missing heading: {heading}"
@@ -35,5 +35,7 @@ def test_has_example_instruction():
 
 def test_variable_placeholders_present():
     text = read_doc_text()
-    # ensure at least one mustache-style placeholder exists
-    assert re.search(r"\{\{.+?\}\}", text), "No variable placeholders found"
+    # ensure specific placeholders we expect are present to avoid false positives
+    placeholders = ["{{player_level}}", "{{inventory}}", "{{location}}"]
+    missing = [p for p in placeholders if p not in text]
+    assert not missing, f"Missing placeholders in doc: {missing}"
