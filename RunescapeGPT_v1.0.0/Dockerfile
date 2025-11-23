@@ -1,5 +1,6 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9
+# Allow overriding the base image (useful to pull a GHCR model base image)
+ARG BASE_IMAGE=python:3.9
+FROM ${BASE_IMAGE}
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
