@@ -1,6 +1,6 @@
 # Prompt Generator
 
-The prompt generator is a powerful feature in the Prompt Builder that helps you create effective prompts for language models. It uses AI to analyze your task description and generate well-structured prompts optimized for your specific needs.
+The prompt generator is a powerful feature in the Prompt Builder that helps you create effective prompts for  language models. It uses AI to analyze your task description and generate well-structured prompts optimized for your specific needs.
 
 ## How It Works
 
