@@ -1,0 +1,48 @@
+name: Build and upload Docker image
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Docker image and upload tar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image with buildx
+        run: |
+          cd RunescapeGPT_v1.0.0 || exit 1
+          IMAGE_NAME=runescape-gpt-app:latest
+          docker build -t $IMAGE_NAME .
+
+      - name: Save image to tar
+        run: |
+          mkdir -p out
+          IMAGE_NAME=runescape-gpt-app:latest
+          docker save $IMAGE_NAME -o out/runescape-gpt-app.tar
+
+      - name: Upload image tar artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: runescape-gpt-image
+          path: out/runescape-gpt-app.tar
+
+      - name: Show instructions
+        run: |
+          echo "Artifact 'runescape-gpt-image' contains the built image tar."
+          echo "Download it from the Actions run -> Artifacts, then load locally with:" 
+          echo "  docker load -i runescape-gpt-app.tar"
+          echo "Then run:" 
+          echo "  docker run -d -p 8000:5000 --name runescape-gpt-container -e OPENAI_API_KEY=\"<KEY>\" runescape-gpt-app"
